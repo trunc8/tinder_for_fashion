@@ -1,0 +1,15 @@
+{
+  "name": "streamlit_testing",
+  "version": "1.0.0",
+  "description": "A chat application built using Streamlit and integrated with other services.",
+  "main": "index.js",
+  "scripts": {
+    "test": "\"test\": \"mocha\""
+  },
+  "keywords": [
+    "\"keywords\":",
+    "["
+  ],
+  "author": "\"AGI House",
+  "license": "MIT"
+}
