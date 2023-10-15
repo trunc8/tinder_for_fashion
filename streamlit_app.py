@@ -140,5 +140,25 @@ def generate_frontend():
                 update_gallery()
                 print("Next button clicked")
 
+    # Create two columns
+    col1, col2 = st.columns(2)
+
+    # Display images in each column
+    with col1:
+        st.subheader("Liked Images")
+        if len(st.session_state['liked']) > 0:
+            cols = st.columns(len(st.session_state['liked']))
+            for i, col in enumerate(cols):
+                with col:
+                    st.image(st.session_state['pickel'].iloc[st.session_state['liked'][i]].url, use_column_width=True)
+
+    with col2:
+        st.subheader("Disliked Images")
+        if len(st.session_state['not_liked']) > 0:
+            cols = st.columns(len(st.session_state['not_liked']))
+            for i, col in enumerate(cols):
+                with col:
+                    st.image(st.session_state['pickel'].iloc[st.session_state['not_liked'][i]].url, use_column_width=True)
+
 
 generate_frontend()
