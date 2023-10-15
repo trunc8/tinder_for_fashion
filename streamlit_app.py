@@ -49,9 +49,8 @@ negative_centroid = []
 
 
 # TODO: Update after every turn
-# def get_gallery_images():
-#     return ["default_image.png", "default_image.png", "default_image.png", "default_image.png", "default_image.png", "default_image.png",
-#                   "default_image.png", "default_image.png", "default_image.png", "default_image.png", "default_image.png", "default_image.png"]
+def get_gallery_images():
+    return ["default_image.png"] * 13
 
 
 class Product:
@@ -84,14 +83,22 @@ def generate_frontend():
     if 'liked' not in st.session_state or 'not_liked' not in st.session_state:
         st.session_state['liked'] = []
         st.session_state['not_liked'] = []
-    if 'gallery_images' not in st.session_state or 'active_prod' not in st.session_state or 'centroid' not in st.session_state or 'seen' not in st.session_state or 'pickel' not in st.session_state:
-        st.session_state['seen'] = set()
-        st.session_state['centroid'] = centroid
-        update_gallery()
+    if 'centroid' not in st.session_state:
+        st.session_state['centroid'] = np.array([0.0] * 1408)
+
+    if 'gallery_images' not in st.session_state:
+        st.session_state['gallery_images'] = get_gallery_images()
+
+    if 'pickel' not in st.session_state:
         with open('embeddings.pkl', 'rb') as f:
             df = pickle.load(f)
             st.session_state['pickel'] = df
+
+    if 'active_prod' not in st.session_state:
         st.session_state['active_prod'] = 0
+
+    if 'seen' not in st.session_state:
+        st.session_state['seen'] = set()
 
 
     # Left half - Tinder-like frontend
@@ -116,10 +123,9 @@ def generate_frontend():
         # print(next_prod_id)
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("No"):
+            if st.button("No", on_click=update_gallery):
                 print("Previous button clicked")
                 # TODO: Push the current image to the negative_image_ids list
-                update_gallery()
                 st.session_state['not_liked'].append(st.session_state['active_prod'])
                 st.session_state['seen'].add(next_prod_id)
                 for i in range (240):
@@ -129,14 +135,13 @@ def generate_frontend():
                 st.session_state['active_prod'] = next_prod_id
 
         with col2:
-            if st.button("Yes"):
+            if st.button("Yes", on_click=update_gallery):
                 print("Next button clicked")
                 curr = np.array(st.session_state['centroid'])
                 new = st.session_state['pickel'].iloc[next_prod_id].embedding
                 st.session_state['centroid'] = np.mean([curr, new], axis=0)
                 st.session_state['seen'].add(st.session_state['active_prod'])
                 st.session_state['liked'].append(st.session_state['active_prod'])
-                update_gallery()
                 for i in range (240):
                     if i not in st.session_state['seen']:
                         next_prod_id = i
