@@ -74,8 +74,7 @@ def update_gallery():
     st.session_state['gallery_images'] = []
     for i, match in enumerate(query_response['matches']):
         st.session_state['gallery_images'].append(match['metadata']['link'])
-        # print(match['metadata']['link'])
-    print('NANI')
+    print('Done updating')
 
 
 
@@ -83,6 +82,9 @@ def generate_frontend():
     main_col1, main_col2 = st.columns(2)
 
     # Use st.session_state to create a state for Streamlit that will contain a list of images
+    if 'liked' not in st.session_state or 'not_liked' not in st.session_state:
+        st.session_state['liked'] = []
+        st.session_state['not_liked'] = []
     if 'gallery_images' not in st.session_state or 'active_prod' not in st.session_state or 'centroid' not in st.session_state or 'seen' not in st.session_state or 'pickel' not in st.session_state:
         st.session_state['seen'] = set()
         st.session_state['centroid'] = centroid
@@ -121,12 +123,12 @@ def generate_frontend():
                 # TODO: Push the current image to the negative_image_ids list
                 update_gallery()
                 # st.session_state['negative'] = # TODO
+                st.session_state['not_liked'].append(st.session_state['active_prod'])
 
-                # print("Previous button clicked")
+                print("Previous button clicked")
         with col2:
             if st.button("Yes"):
                 # TODO: Push the current image to the negative_image_ids list
-                st.session_state['seen'].add(st.session_state['active_prod_vec']['id'])
                 curr = np.array(st.session_state['centroid'])
                 new = st.session_state['pickel'].iloc[next_prod_id].embedding
                 # print("OLD CURR", curr)
@@ -134,8 +136,9 @@ def generate_frontend():
                 st.session_state['centroid'] = np.mean([curr, new], axis=0)
                 # print("NEW CURR", st.session_state['centroid'] )
                 st.session_state['seen'].add(st.session_state['active_prod'])
+                st.session_state['liked'].append(st.session_state['active_prod'])
                 update_gallery()
-                # print("Next button clicked")
+                print("Next button clicked")
 
 
 generate_frontend()
