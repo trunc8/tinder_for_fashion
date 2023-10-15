@@ -25,6 +25,9 @@ from langchain.llms import OpenAI
 from sqlalchemy.sql import text
 import pinecone
 import numpy as np
+import pickle
+import pandas as pd
+
 
 
 pinecone.init(api_key="API_KEY", environment="us-west1-gcp-free")
@@ -68,12 +71,9 @@ def update_gallery():
     )
     st.session_state['gallery_images'] = []
     print("Updating gallery")
-    # st.session_state['active_prod_vec'] = query_response['matches'][0]['vector']
     for i, match in enumerate(query_response['matches']):
-        if i == 0:
-            st.session_state['active_prod_vec'] = match
         st.session_state['gallery_images'].append(match['metadata']['link'])
-        print(match['metadata']['link'])
+        # print(match['metadata']['link'])
     print('NANI')
 
 
@@ -82,10 +82,14 @@ def generate_frontend():
     main_col1, main_col2 = st.columns(2)
 
     # Use st.session_state to create a state for Streamlit that will contain a list of images
-    if 'gallery_images' not in st.session_state or 'active_prod_vec' not in st.session_state or 'centroid' not in st.session_state or 'seen' not in st.session_state:
+    if 'gallery_images' not in st.session_state or 'active_prod' not in st.session_state or 'centroid' not in st.session_state or 'seen' not in st.session_state or 'pickel' not in st.session_state:
         st.session_state['seen'] = set()
         update_gallery()
         st.session_state['centroid'] = centroid
+        with open('embeddings.pkl', 'rb') as f:
+            df = pickle.load(f)
+            st.session_state['pickel'] = df
+        st.session_state['active_prod'] = 0
 
 
     # Left half - Tinder-like frontend
@@ -102,7 +106,14 @@ def generate_frontend():
     # Right half - Grid of images
     with main_col2:
         st.subheader("Swiper")
-        card_image = st.image(st.session_state['gallery_images'][0], use_column_width=True)
+        next_prod_id = 1
+        for i in range (240):
+            if i not in st.session_state['seen']:
+                next_prod_id = i
+                break
+        print(next_prod_id)
+        st.session_state['active_prod'] = next_prod_id
+        card_image = st.image(st.session_state['pickel'].iloc[next_prod_id].url, use_column_width=True)
         col1, col2 = st.columns(2)
         with col1:
             if st.button("No"):
@@ -115,11 +126,12 @@ def generate_frontend():
             if st.button("Yes"):
                 # TODO: Push the current image to the negative_image_ids list
                 update_gallery()
-                print(type(st.session_state['centroid']))
-                # st.session_
+                st.session_state['seen'].add(st.session_state['active_prod_vec']['id'])
                 curr = np.array(st.session_state['centroid'])
                 new = np.array(st.session_state['active_prod_vec']['values'])
                 st.session_state['centroid'] = np.mean([curr, new], axis=0)
+                print(curr)
+                st.session_state['seen'].add(st.session_state['active_prod'])
                 # print("Next button clicked")
 
 
