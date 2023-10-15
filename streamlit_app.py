@@ -114,9 +114,6 @@ def generate_frontend():
                 next_prod_id = i
                 break
         # print(next_prod_id)
-        st.session_state['active_prod'] = next_prod_id
-        st.session_state['card_image'] = st.session_state['pickel'].iloc[next_prod_id].url
-        card_image = st.image(st.session_state['card_image'], use_column_width=True)
         col1, col2 = st.columns(2)
         with col1:
             if st.button("No"):
@@ -145,6 +142,9 @@ def generate_frontend():
                         next_prod_id = i
                         break
                 st.session_state['active_prod'] = next_prod_id
+        st.session_state['active_prod'] = next_prod_id
+        st.session_state['card_image'] = st.session_state['pickel'].iloc[next_prod_id].url
+        card_image = st.image(st.session_state['card_image'], use_column_width=True)
 
     # Create two columns
     col1, col2 = st.columns(2)
