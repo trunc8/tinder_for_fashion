@@ -42,7 +42,7 @@ fetch_response = index.fetch(ids=["1"], namespace=NAMESPACE)
 id = list(fetch_response.vectors.keys())[0]
 centroid = np.array(fetch_response.vectors[id]['values'])
 negative_centroid = []
-print(centroid[0])
+# print(centroid[0])
 
 
 
@@ -62,15 +62,16 @@ class Product:
 
 def update_gallery():
     id = list(fetch_response.vectors.keys())[0]
+    print("Updating gallery")
+    print(st.session_state['centroid'])
     query_response = index.query(
         namespace=NAMESPACE,
         top_k=13,
         include_values=True,
         include_metadata=True,
-        vector=fetch_response.vectors[id]['values'],
+        vector=st.session_state['centroid'].tolist(),
     )
     st.session_state['gallery_images'] = []
-    print("Updating gallery")
     for i, match in enumerate(query_response['matches']):
         st.session_state['gallery_images'].append(match['metadata']['link'])
         # print(match['metadata']['link'])
@@ -84,8 +85,8 @@ def generate_frontend():
     # Use st.session_state to create a state for Streamlit that will contain a list of images
     if 'gallery_images' not in st.session_state or 'active_prod' not in st.session_state or 'centroid' not in st.session_state or 'seen' not in st.session_state or 'pickel' not in st.session_state:
         st.session_state['seen'] = set()
-        update_gallery()
         st.session_state['centroid'] = centroid
+        update_gallery()
         with open('embeddings.pkl', 'rb') as f:
             df = pickle.load(f)
             st.session_state['pickel'] = df
@@ -111,7 +112,7 @@ def generate_frontend():
             if i not in st.session_state['seen']:
                 next_prod_id = i
                 break
-        print(next_prod_id)
+        # print(next_prod_id)
         st.session_state['active_prod'] = next_prod_id
         card_image = st.image(st.session_state['pickel'].iloc[next_prod_id].url, use_column_width=True)
         col1, col2 = st.columns(2)
@@ -125,13 +126,15 @@ def generate_frontend():
         with col2:
             if st.button("Yes"):
                 # TODO: Push the current image to the negative_image_ids list
-                update_gallery()
                 st.session_state['seen'].add(st.session_state['active_prod_vec']['id'])
                 curr = np.array(st.session_state['centroid'])
-                new = np.array(st.session_state['active_prod_vec']['values'])
+                new = st.session_state['pickel'].iloc[next_prod_id].embedding
+                # print("OLD CURR", curr)
+                # print("NEW", new)
                 st.session_state['centroid'] = np.mean([curr, new], axis=0)
-                print(curr)
+                # print("NEW CURR", st.session_state['centroid'] )
                 st.session_state['seen'].add(st.session_state['active_prod'])
+                update_gallery()
                 # print("Next button clicked")
 
 
