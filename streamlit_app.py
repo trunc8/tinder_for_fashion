@@ -61,7 +61,6 @@ class Product:
         self.embedding = embedding
 
 def update_gallery():
-    id = list(fetch_response.vectors.keys())[0]
     print("Updating gallery")
     print(st.session_state['centroid'])
     query_response = index.query(
@@ -116,29 +115,36 @@ def generate_frontend():
                 break
         # print(next_prod_id)
         st.session_state['active_prod'] = next_prod_id
-        card_image = st.image(st.session_state['pickel'].iloc[next_prod_id].url, use_column_width=True)
+        st.session_state['card_image'] = st.session_state['pickel'].iloc[next_prod_id].url
+        card_image = st.image(st.session_state['card_image'], use_column_width=True)
         col1, col2 = st.columns(2)
         with col1:
             if st.button("No"):
+                print("Previous button clicked")
                 # TODO: Push the current image to the negative_image_ids list
                 update_gallery()
-                # st.session_state['negative'] = # TODO
                 st.session_state['not_liked'].append(st.session_state['active_prod'])
+                st.session_state['seen'].add(next_prod_id)
+                for i in range (240):
+                    if i not in st.session_state['seen']:
+                        next_prod_id = i
+                        break
+                st.session_state['active_prod'] = next_prod_id
 
-                print("Previous button clicked")
         with col2:
             if st.button("Yes"):
-                # TODO: Push the current image to the negative_image_ids list
+                print("Next button clicked")
                 curr = np.array(st.session_state['centroid'])
                 new = st.session_state['pickel'].iloc[next_prod_id].embedding
-                # print("OLD CURR", curr)
-                # print("NEW", new)
                 st.session_state['centroid'] = np.mean([curr, new], axis=0)
-                # print("NEW CURR", st.session_state['centroid'] )
                 st.session_state['seen'].add(st.session_state['active_prod'])
                 st.session_state['liked'].append(st.session_state['active_prod'])
                 update_gallery()
-                print("Next button clicked")
+                for i in range (240):
+                    if i not in st.session_state['seen']:
+                        next_prod_id = i
+                        break
+                st.session_state['active_prod'] = next_prod_id
 
     # Create two columns
     col1, col2 = st.columns(2)
