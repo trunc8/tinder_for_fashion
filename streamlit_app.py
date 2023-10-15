@@ -27,8 +27,6 @@ from sqlalchemy.sql import text
 positive_image_ids = []
 negative_image_ids = []
 
-gallery_images = []
-
 # TODO: Update after every turn
 # def get_gallery_images():
 #     return ["default_image.png", "default_image.png", "default_image.png", "default_image.png", "default_image.png", "default_image.png",
@@ -36,7 +34,8 @@ gallery_images = []
 
 
 def update_gallery():
-    gallery_images = [
+    print("Updating gallery")
+    st.session_state['gallery_images'] = [
         "default_image.png",
         "default_image.png",
         "default_image.png",
@@ -53,18 +52,22 @@ def update_gallery():
 
 
 def generate_frontend():
-    update_gallery()
     main_col1, main_col2 = st.columns(2)
+
+    # Use st.session_state to create a state for Streamlit that will contain a list of images
+    if 'gallery_images' not in st.session_state:
+        update_gallery()
+        
 
     # Left half - Tinder-like frontend
     with main_col1:
         st.subheader("Your Style")
         # images = get_gallery_images()
-        for i in range(0, len(gallery_images), 3):
+        for i in range(0, len(st.session_state['gallery_images']), 3):
             row = st.columns(3)
             for j in range(3):
                 with row[j]:
-                    st.image(gallery_images[i + j], use_column_width=True)
+                    st.image(st.session_state['gallery_images'][i + j], use_column_width=True)
 
     # Right half - Grid of images
     with main_col2:
@@ -75,12 +78,12 @@ def generate_frontend():
             if st.button("No"):
                 # TODO: Push the current image to the negative_image_ids list
                 update_gallery()
-                print("Previous button clicked")
+                # print("Previous button clicked")
         with col2:
             if st.button("Yes"):
                 # TODO: Push the current image to the negative_image_ids list
                 update_gallery()
-                print("Next button clicked")
+                # print("Next button clicked")
 
 
 generate_frontend()
