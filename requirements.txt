@@ -8,4 +8,4 @@ tabulate
 postgres
 sqlalchemy
 uuid
-pinecone
+pinecone-client
