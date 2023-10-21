@@ -29,8 +29,10 @@ import pickle
 import pandas as pd
 
 
+with open('pinecone_key.txt') as f:
+    API_KEY = f.readlines()[0].strip()
 
-pinecone.init(api_key="API_KEY", environment="us-west1-gcp-free")
+pinecone.init(api_key=API_KEY, environment="us-west1-gcp-free")
 # Initialize the pinecone index
 index = pinecone.Index("agihouse")
 
